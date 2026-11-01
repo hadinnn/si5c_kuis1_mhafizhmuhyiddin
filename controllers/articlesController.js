@@ -15,8 +15,9 @@ function angkaAman(nilai, bawaan, min, maks) {
 }
 
 exports.create = async (req, res) => {
-    const article = await articles.create(req.body);
-    res.status(201).json(article);
+    const { judul, articlesId, bioPenulis, categoriesId } = req.body;
+    const articles = await articles.create({ judul, articlesId, bioPenulis, categoriesId });
+    res.status(201).json(articles);
 };
 
 exports.getAll = async (req, res) => {
@@ -85,9 +86,10 @@ exports.getById = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
+  const { judul, articlesId, bioPenulis, categoriesId } = req.body;
   const data = await articles.findByIdAndUpdate(
     req.params.id,
-    req.body,
+    { judul, articlesId, bioPenulis, categoriesId },
     { returnDocument: 'after', runValidators: true }
   );
   if (!data) throw errorHttp(404, 'Data tidak ditemukan');

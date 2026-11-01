@@ -1,8 +1,9 @@
 const categories = require('../models/categoriesModel');
 
 exports.create = async (req, res) => {
-    const categories = await categories.create(req.body);
-    res.status(201).json(categories);
+    const { kode, nama } = req.body;
+    const category = await categories.create({ kode, nama });
+    res.status(201).json(category);
 };
 
 exports.getAll = async (req, res) => {
