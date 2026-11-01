@@ -15,16 +15,13 @@ function angkaAman(nilai, bawaan, min, maks) {
 }
 
 exports.create = async (req, res) => {
-  try {
     const article = await articles.create(req.body);
     res.status(201).json(article);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
 };
 
 exports.getAll = async (req, res) => {
-  const filter = {};
+  // 1. Filtering
+   const filter = {};
   if (req.query.pekerjaan) {
     filter['bioPenulis.pekerjaan'] = String(req.query.pekerjaan);
   }
@@ -33,10 +30,12 @@ exports.getAll = async (req, res) => {
     // Kode kategori tidak dikenal -> hasil kosong ($in: [] tidak cocok dengan apa pun)
     filter.categoriesId = category ? category._id : { $in: [] };
   }
+  // 2. Pagination dengan batas maksimum
    const page = angkaAman(req.query.page, 1, 1, Number.MAX_SAFE_INTEGER);
   const limit = angkaAman(req.query.limit, LIMIT_DEFAULT, 1, LIMIT_MAKS);
 
   // Sorting: ?sort=judul (naik) atau ?sort=-judul (turun). Bawaan: terbaru dulu
+  // 3. Sorting: ?sort=judul (naik) atau ?sort=-judul (turun). Bawaan: terbaru dulu
   const sortParam = String(req.query.sort || '-createdAt');
   const arah = sortParam.startsWith('-') ? -1 : 1;
   const sortField = sortParam.replace(/^-/, '');
@@ -44,7 +43,7 @@ exports.getAll = async (req, res) => {
     throw errorHttp(400, `sort hanya boleh: ${FIELD_SORT.join(', ')}`);
   }
 
-  // Projection: ?fields=judul,categoriesId
+  //4.  Projection: ?fields=judul,categoriesId
   let select = '';
   if (req.query.fields) {
     const fields = String(req.query.fields).split(',').map((f) => f.trim());
