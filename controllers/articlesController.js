@@ -5,6 +5,7 @@ const { errorHttp } = require('../middlewares/errorHandler');
 const LIMIT_DEFAULT = 10;
 const LIMIT_MAKS = 50;
 const FIELD_SORT = ['judul', 'articlesId', 'createdAt'];
+const FIELD_BOLEH_DIPILIH = ['judul', 'articlesId', 'bioPenulis', 'categoriesId', 'createdAt'];
 
 // Mengubah bilangan dari query string menjadi bilangan bulat yang aman
 function angkaAman(nilai, bawaan, min, maks) {
@@ -35,7 +36,7 @@ exports.getAll = async (req, res) => {
    const page = angkaAman(req.query.page, 1, 1, Number.MAX_SAFE_INTEGER);
   const limit = angkaAman(req.query.limit, LIMIT_DEFAULT, 1, LIMIT_MAKS);
 
-  // Sorting: ?sort=nama (naik) atau ?sort=-nama (turun). Bawaan: terbaru dulu
+  // Sorting: ?sort=judul (naik) atau ?sort=-judul (turun). Bawaan: terbaru dulu
   const sortParam = String(req.query.sort || '-createdAt');
   const arah = sortParam.startsWith('-') ? -1 : 1;
   const sortField = sortParam.replace(/^-/, '');
@@ -43,14 +44,37 @@ exports.getAll = async (req, res) => {
     throw errorHttp(400, `sort hanya boleh: ${FIELD_SORT.join(', ')}`);
   }
 
-  const [data, total] = await Promise.all([
-    articles.find(filter)
-      .populate('categoriesId', 'kode nama')
-      .sort({ [sortField]: arah, _id: 1 })
-      .skip((page - 1) * limit)
-      .limit(limit),
-    articles.countDocuments(filter),
-  ]);
+  // Projection: ?fields=judul,categoriesId
+  let select = '';
+  if (req.query.fields) {
+    const fields = String(req.query.fields).split(',').map((f) => f.trim());
+    if (!fields.every((f) => FIELD_BOLEH_DIPILIH.includes(f))) {
+      throw errorHttp(400, `fields hanya boleh: ${FIELD_BOLEH_DIPILIH.join(', ')}`);
+    }
+    select = fields.join(' ');
+  }
+
+  // const [data, total] = await Promise.all([
+  //   articles.find(filter)
+  //     .populate('categoriesId', 'kode nama')
+  //     .sort({ [sortField]: arah, _id: 1 })
+  //     .skip((page - 1) * limit)
+  //     .limit(limit),
+  //   articles.countDocuments(filter),
+  // ]);
+
+    const query = articles.find(filter)
+    .select(select)
+    .sort({ [sortField]: arah, _id: 1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  // Populate kategori hanya jika categoriesId diminta (atau tanpa projection).
+  if (!select || select.split(' ').includes('categoriesId')) {
+    query.populate('categoriesId', 'kode nama');
+  }
+
+  const [data, total] = await Promise.all([query, articles.countDocuments(filter)]);
 
   res.json({ data, page, limit, total, totalPages: Math.ceil(total / limit) });
 };
