@@ -1,0 +1,368 @@
+{
+  "info": {
+    "_postman_id": "e99544cf-9c85-42ba-be99-4cd308b504a2",
+    "name": "Express Blog",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58421760",
+    "_collection_link": "https://go.postman.co/collection/58421760-e99544cf-9c85-42ba-be99-4cd308b504a2?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "A. CRUD",
+      "item": [
+        {
+          "name": "GET Semua Artikel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 200', function () {\r\n  pm.response.to.have.status(200);\r\n});\r\n\r\npm.test('Response berupa array', function () {\r\n  const jsonData = pm.response.json();\r\n  pm.expect(jsonData).to.be.an('array');\r\n});\r\n\r\npm.test('Setiap data memiliki id dan judul', function () {\r\n  const jsonData = pm.response.json();\r\n  jsonData.forEach((item) => {\r\n    pm.expect(item).to.have.property('id');\r\n    pm.expect(item).to.have.property('judul');\r\n  });\r\n});\r\n\r\npm.test('Response time di bawah 500ms', function () {\r\n  pm.expect(pm.response.responseTime).to.be.below(500);\r\n});\r\n\r\npm.test('Data artikel pertama berjudul Mengenal REST API', function () {\r\n  const jsonData = pm.response.json();\r\n  pm.expect(jsonData[0].judul).to.eql('Mengenal REST API');\r\n});\r\n\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Tambah Artikel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 201', function () {\r\n  pm.response.to.have.status(201);\r\n});\r\n\r\npm.test('Data baru memiliki id dan judul sesuai kiriman', function () {\r\n  const jsonData = pm.response.json();\r\n  pm.expect(jsonData).to.have.property('id');\r\n  pm.expect(jsonData.judul).to.eql('Ambisi Presiden di tahun 2026');\r\n});\r\n\r\nif (pm.response.code === 201) {\r\n  pm.environment.set('articlesId', pm.response.json().id);\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "    {\r\n        \"id\": 3,\r\n        \"judul\": \"Ambisi Presiden di tahun 2026\",\r\n        \"isi\": \"Presiden Republik Indonesia Prabowo Subianto memiliki tujuan ...\",\r\n        \"penulis\": \"Buna Teddy\",\r\n        \"kategori\": \"Politik\",\r\n        \"dipublikasikan\": false\r\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Satu Artikel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 200', function () {\r\n  pm.response.to.have.status(200);\r\n});\r\n\r\npm.test('Data yang diambil adalah artikel yang berjudul Ambisi Presiden di tahun 2026', function () {\r\n  const jsonData = pm.response.json();\r\n  pm.expect(jsonData.id).to.eql(Number(pm.environment.get('articlesId')));\r\n  pm.expect(jsonData.judul).to.eql('Ambisi Presiden di tahun 2026');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/articles/{{articlesId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles",
+                "{{articlesId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Ubah Artikel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 200', function () {\r\n  pm.response.to.have.status(200);\r\n});\r\n\r\npm.test('Jurusan berubah, nama tetap', function () {\r\n  const jsonData = pm.response.json();\r\n  pm.expect(jsonData.kategori).to.eql('Pemerintahan');\r\n  pm.expect(jsonData.judul).to.eql('Ambisi Presiden di tahun 2026');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"kategori\": \"Pemerintahan\" }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/articles/{{articlesId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles",
+                "{{articlesId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Hapus Artikel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 204', function () {\r\n  pm.response.to.have.status(204);\r\n});\r\n\r\npm.test('Response tidak memiliki isi', function () {\r\n  pm.expect(pm.response.text()).to.eql('');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/articles/{{articlesId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles",
+                "{{articlesId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "B. Skenario Gagal",
+      "item": [
+        {
+          "name": "GET ID Sudah Dihapus (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 404', function () {\r\n  pm.response.to.have.status(404);\r\n});\r\n\r\npm.test('Pesan error: Data tidak ditemukan', function () {\r\n  pm.expect(pm.response.json().message).to.eql('Data tidak ditemukan');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/articles/{{articlesId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles",
+                "{{articlesId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Tanpa API Key (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 401', function () {\r\n  pm.response.to.have.status(401);\r\n});\r\n\r\npm.test('Pesan error: API key tidak valid', function () {\r\n  pm.expect(pm.response.json().message).to.eql('API key tidak valid');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"judul\": \"Artikel Tanpa Key\",\r\n    \"isi\": \"Tanpa Key\",\r\n    \"penulis\": \"Tanpa Key\",\r\n    \"kategori\": \"Politik\",\r\n    \"dipublikasikan\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Data Tidak Lengkap (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 400', function () {\r\n  pm.response.to.have.status(400);\r\n});\r\n\r\npm.test('Pesan error menyebut field wajib', function () {\r\n  pm.expect(pm.response.json().message).to.include('wajib diisi');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"judul\": \"Hanya Judul\" }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST JSON Rusak (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code adalah 400', function () {\r\n  pm.response.to.have.status(400);\r\n});\r\n\r\npm.test('Respons tetap berupa JSON, bukan HTML', function () {\r\n  pm.response.to.be.json;\r\n  pm.expect(pm.response.json().message).to.eql('Format JSON tidak valid');\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"judul\": \"Rusak\",}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/articles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "articles"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
