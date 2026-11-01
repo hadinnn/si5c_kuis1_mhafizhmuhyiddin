@@ -1,11 +1,14 @@
-const categoriesModel = require('../models/CategoriesModel');
+const categories = require('../models/categoriesModel');
 
 exports.create = async (req, res) => {
-  const { kode, nama } = req.body;
-  const categoriesModel = await categoriesModel.create({ kode, nama });
-  res.status(201).json(categoriesModel);
+  try {
+    const categories = await categories.create(req.body);
+    res.status(201).json(categories);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 };
 
 exports.getAll = async (req, res) => {
-  res.json(await categoriesModel.find().sort({ kode: 1 }));
+  res.json(await categories.find());
 };

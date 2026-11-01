@@ -1,42 +1,42 @@
-const articlesModel = require('../models/articlesModel');
-const categoriesModel = require('../models/categoriesModel');
+const articles = require('../models/articlesModel');
 const { errorHttp } = require('../middlewares/errorHandler');
 
-const LIMIT_DEFAULT = 10;
-const LIMIT_MAKS = 50;
-const FIELD_SORT = ['nama', 'nim', 'createdAt'];
-const FIELD_BOLEH_DIPILIH = ['nama', 'nim', 'alamat', 'prodiId', 'createdAt'];
-
-exports.getAll = (req, res) => {
-  const { kategori } = req.query;
-  res.json(articlesModel.getAll(kategori));
+exports.create = async (req, res) => {
+  try {
+    const article = await articles.create(req.body);
+    res.status(201).json(article);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 };
 
-exports.getById = (req, res, next) => {
-  const id = parseInt(req.params.id);
-  const data = articlesModel.getById(id);
-  if (!data) return next(errorHttp(404, 'Data tidak ditemukan'));
+exports.getAll = async (req, res) => {
+  const filter = {};
+  if (req.query.kota) {
+    filter['alamat.kota'] = String(req.query.kota);
+  }
+  const data = await articles.find(filter).populate('categoriesId');
   res.json(data);
 };
 
-exports.create = (req, res, next) => {
-  const { judul, isi, penulis, kategori, dipublikasikan } = req.body;
-  if (!judul || !isi || !penulis || !kategori) return next(errorHttp(400, 'Semua field wajib diisi'));
-
-  const baru = articlesModel.create({ judul, isi, penulis, kategori, dipublikasikan: true || false });
-  res.status(201).json(baru);
+exports.getById = async (req, res) => {
+  const data = await articles.findById(req.params.id).populate('categoriesId');
+  if (!data) throw errorHttp(404, 'Data tidak ditemukan');
+  res.json(data);
 };
 
-exports.update = (req, res, next) => {
-  const id = parseInt(req.params.id);
-  const hasil = articlesModel.update(id, req.body);
-  if (!hasil) return next(errorHttp(404, 'Data tidak ditemukan'));
-  res.json(hasil);
+exports.update = async (req, res) => {
+  const data = await articles.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { returnDocument: 'after', runValidators: true }
+  );
+  if (!data) throw errorHttp(404, 'Data tidak ditemukan');
+  res.json(data);
 };
 
-exports.remove = (req, res, next) => {
-  const id = parseInt(req.params.id);
-  const berhasil = articlesModel.remove(id);
-  if (!berhasil) return next(errorHttp(404, 'Data tidak ditemukan'));
+exports.remove = async (req, res) => {
+  const data = await articles.findByIdAndDelete(req.params.id);
+  if (!data) throw errorHttp(404, 'Data tidak ditemukan');
   res.status(204).send();
 };

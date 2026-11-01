@@ -1,36 +1,70 @@
 // seed.js
-// Mengisi basis data dengan 3 prodi dan 25 mahasiswa. Aman dijalankan berulang:
+// Mengisi basis data dengan 3 kategori dan 25 artikel. Aman dijalankan berulang:
 // data lama dihapus dulu.
 require('dotenv').config({ quiet: true });
 const mongoose = require('mongoose');
-const Prodi = require('./models/prodiModel');
-const Mahasiswa = require('./models/mahasiswaModel');
+const categories = require('./models/categoriesModel');
+const Article = require('./models/articlesModel');
 
-const NAMA = ['Andi', 'Budi', 'Citra', 'Dewi', 'Eko', 'Fitri', 'Gita', 'Hadi', 'Indra', 'Joko',
-  'Kiki', 'Lina', 'Maya', 'Nanda', 'Oka', 'Putri', 'Qori', 'Rina', 'Sari', 'Tono',
-  'Umar', 'Vina', 'Wawan', 'Yuni', 'Zaki'];
-const KOTA = ['Palembang', 'Indralaya', 'Prabumulih', 'Lubuklinggau'];
+const judul = [
+  'Manfaat Jalan Kaki',
+  'Tips Tidur Berkualitas',
+  'Pentingnya Sarapan',
+  'Cara Mengelola Stres',
+  'Pola Makan Seimbang',
+  'Olahraga untuk Pemula',
+  'Menjaga Kesehatan Mata',
+  'Tips Belajar Efektif',
+  'Membaca untuk Menambah Wawasan',
+  'Cara Mengatur Waktu',
+  'Belajar Bahasa Asing',
+  'Pentingnya Menabung',
+  'Tips Mengelola Uang',
+  'Memulai Usaha Kecil',
+  'Belanja Bijak di Internet',
+  'Menjaga Kebersihan Rumah',
+  'Mengurangi Sampah Plastik',
+  'Merawat Tanaman Hias',
+  'Wisata Alam di Indonesia',
+  'Tips Memilih Destinasi Liburan',
+  'Mengenal Kuliner Nusantara',
+  'Sejarah Kopi di Indonesia',
+  'Teknologi dalam Kehidupan',
+  'Manfaat Membaca Buku',
+  'Cara Menjaga Produktivitas',
+];
+const pekerjaan = ['Dokter', 'Guru', 'Perawat', 'Pengacara'];
+const namaPenulis = [
+  'Andi Pratama',
+  'Budi Santoso',
+  'Citra Lestari',
+  'Dewi Anggraini',
+  'Eko Saputra',
+];
 
 async function main() {
   await mongoose.connect(process.env.MONGODB_URI);
-  await Mahasiswa.deleteMany({});
-  await Prodi.deleteMany({});
+  await Article.deleteMany({});
+  await categories.deleteMany({});
 
-  const prodi = await Prodi.insertMany([
-    { kode: 'SI', nama: 'Sistem Informasi' },
-    { kode: 'TI', nama: 'Teknik Informatika' },
-    { kode: 'MI', nama: 'Manajemen Informatika' },
+  const category = await categories.insertMany([
+    { kode: 'KE', nama: 'Kesehatan' },
+    { kode: 'ED', nama: 'Edukasi' },
+    { kode: 'EN', nama: 'Entertainment' },
   ]);
 
-  const mahasiswa = NAMA.map((nama, i) => ({
-    nama,
-    nim: String(2301001 + i),
-    alamat: { jalan: `Jl. Contoh No. ${i + 1}`, kota: KOTA[i % KOTA.length] },
-    prodiId: prodi[i % 3]._id, // SI, TI, MI bergantian
+  const articleData = judul.map((judul, i) => ({
+    judul,
+    articlesId: String(2301001 + i),
+    bioPenulis: {
+      nama: namaPenulis[i % namaPenulis.length],
+      pekerjaan: pekerjaan[i % pekerjaan.length],
+    },
+    categoriesId: category[i % category.length]._id,
   }));
-  await Mahasiswa.insertMany(mahasiswa);
+  await Article.insertMany(articleData);
 
-  console.log(`Seed selesai: ${prodi.length} prodi, ${mahasiswa.length} mahasiswa`);
+  console.log(`Seed selesai: ${category.length} kategori, ${articleData.length} artikel`);
   await mongoose.disconnect();
 }
 

@@ -1,36 +1,16 @@
-let articles = [
-  { id: 1, judul: 'Mengenal REST API', isi: 'REST adalah gaya arsitektur ...', penulis: 'Nadia Putri', kategori: 'Teknologi', dipublikasikan: true},
-  { id: 2, judul: 'Tragedi Dibalik Asap di Palembang', isi: 'Isi artikel tentang tragedi di Palembang', penulis: 'Aldi Wijaya', kategori: 'Tragedi', dipublikasikan: false },
-];
-let nextId = 3;
+const mongoose = require('mongoose');
 
-function getAll(kategori) {
-  if (kategori) return articles.filter((m) => m.kategori === kategori);
-  return articles;
-}
+const bioPenulisSchema = new mongoose.Schema({
+  nama: String,
+  pekerjaan: String,
+}, { _id: false });
 
-function getById(id) {
-  return articles.find((m) => m.id === id);
-}
+const articleSchema = new mongoose.Schema({
+  judul: { type: String, required: [true, 'judul wajib diisi'], trim: true },
+  articlesId: { type: String, required: [true, 'articlesId wajib diisi'], unique: true, trim: true },
+  bioPenulis: bioPenulisSchema,
+  categoriesId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+  createdAt: { type: Date, default: Date.now },
+});
 
-function create(data) {
-  const baru = { id: nextId++, ...data };
-  articles.push(baru);
-  return baru;
-}
-
-function update(id, data) {
-  const index = articles.findIndex((m) => m.id === id);
-  if (index === -1) return null;
-  articles[index] = { ...articles[index], ...data, id };
-  return articles[index];
-}
-
-function remove(id) {
-  const index = articles.findIndex((m) => m.id === id);
-  if (index === -1) return false;
-  articles.splice(index, 1);
-  return true;
-}
-
-module.exports = { getAll, getById, create, update, remove };
+module.exports = mongoose.model('Article', articleSchema);
