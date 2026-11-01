@@ -1,5 +1,11 @@
 const articlesModel = require('../models/articlesModel');
+const categoriesModel = require('../models/categoriesModel');
 const { errorHttp } = require('../middlewares/errorHandler');
+
+const LIMIT_DEFAULT = 10;
+const LIMIT_MAKS = 50;
+const FIELD_SORT = ['nama', 'nim', 'createdAt'];
+const FIELD_BOLEH_DIPILIH = ['nama', 'nim', 'alamat', 'prodiId', 'createdAt'];
 
 exports.getAll = (req, res) => {
   const { kategori } = req.query;
